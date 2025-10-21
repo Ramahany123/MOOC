@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>French MOOC - Document Viewer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="styles/documents.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+
+</head>
+
+<body>
+
+  <div class="mooc-container">
+    <!-- Course Header -->
+    <header class="mooc-header">
+      <h1>Documents Complémentaires</h1>
+      <p>Review the supplementary materials for this course.</p>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="mooc-content">
+      <div class="pdf-viewer-container">
+        <!-- The <iframe> tag is used to embed the PDF document directly into the page. -->
+        <!-- IMPORTANT: Update the 'src' attribute to the correct path of your PDF file. -->
+        <iframe class="pdf-viewer" src="assets/documents/document.pdf" title="French Pronunciation Guide"
+          frameborder="0">
+        </iframe>
+      </div>
+    </main>
+
+    <footer class="mooc-footer">
+      <a href="home.html">&larr; Back to Main Menu</a>
+    </footer>
+  </div>
+
+</body>
+
+</html>
