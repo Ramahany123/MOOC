@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>French MOOC - Video Lessons</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" type="text/css" href="styles/videos.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+
+  <div class="mooc-container">
+    <!-- Course Header -->
+    <header class="mooc-header">
+      <h1>Module Vidéos</h1>
+      <p>Watch the lessons below to improve your pronunciation.</p>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="mooc-content">
+      <div class="video-accordion">
+
+        <!-- Video Item 1 -->
+        <div class="video-item">
+          <div class="video-header">
+            <span class="video-title">Leçon 1: Ma famille</span>
+            <span class="video-toggle-icon">+</span>
+          </div>
+          <div class="video-content">
+            <!-- IMPORTANT: Replace the 'src' with the actual path to your video file -->
+            <video class="video-player" controls preload="metadata">
+              <source src="assets/videos/video1.mp4" type="video/mp4">
+              Your browser does not support the video tag.
+            </video>
+          </div>
+        </div>
+
+        <!-- Video Item 2 -->
+        <div class="video-item">
+          <div class="video-header">
+            <span class="video-title">Leçon 2: Dialogue sur la famille</span>
+            <span class="video-toggle-icon">+</span>
+          </div>
+          <div class="video-content">
+            <!-- IMPORTANT: Replace the 'src' with the actual path to your video file -->
+            <video class="video-player" controls preload="metadata">
+              <source src="assets/videos/video2.mp4" type="video/mp4">
+              Your browser does not support the video tag.
+            </video>
+          </div>
+        </div>
+
+        <!-- Video Item 3 -->
+        <div class="video-item">
+          <div class="video-header">
+            <span class="video-title">Leçon 3: Quel âge as tu?</span>
+            <span class="video-toggle-icon">+</span>
+          </div>
+          <div class="video-content">
+            <!-- IMPORTANT: Replace the 'src' with the actual path to your video file -->
+            <video class="video-player" controls preload="metadata">
+              <source src="assets/videos/video3.mp4" type="video/mp4">
+              Your browser does not support the video tag.
+            </video>
+          </div>
+        </div>
+
+        <!-- Video Item 4 -->
+        <div class="video-item">
+          <div class="video-header">
+            <span class="video-title">Leçon 4: Les animaux domestiques</span>
+            <span class="video-toggle-icon">+</span>
+          </div>
+          <div class="video-content">
+            <!-- IMPORTANT: Replace the 'src' with the actual path to your video file -->
+            <video class="video-player" controls preload="metadata">
+              <source src="assets/videos/video4.mp4" type="video/mp4">
+              Your browser does not support the video tag.
+            </video>
+          </div>
+        </div>
+
+      </div>
+    </main>
+
+    <footer class="mooc-footer">
+      <a href="home.html">&larr; Back to Main Menu</a>
+    </footer>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const videoHeaders = document.querySelectorAll('.video-header');
+
+      videoHeaders.forEach(header => {
+        header.addEventListener('click', () => {
+          const currentlyActiveItem = document.querySelector('.video-item.active');
+          const clickedItem = header.parentElement;
+
+          // If there's an active item and it's not the one we just clicked, close it
+          if (currentlyActiveItem && currentlyActiveItem !== clickedItem) {
+            currentlyActiveItem.classList.remove('active');
+          }
+
+          // Toggle the active state of the clicked item
+          clickedItem.classList.toggle('active');
+        });
+      });
+    });
+  </script>
+
+</body>
+
+</html>

@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>French MOOC - Audio Exercises</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="styles/audios.css" rel="stylesheet" type="text/css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+
+</head>
+
+<body>
+
+  <div class="mooc-container">
+    <!-- Course Header -->
+    <header class="mooc-header">
+      <h1>Exercices Audio</h1>
+      <p>Listen carefully to the exercises to train your ear.</p>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="mooc-content">
+      <div class="audio-accordion">
+
+        <!-- Audio Item 1 -->
+        <div class="audio-item">
+          <div class="audio-header">
+            <span class="audio-title">Audio 1: Chanson voici ma famille</span>
+            <span class="audio-toggle-icon">+</span>
+          </div>
+          <div class="audio-content">
+            <!-- IMPORTANT: Replace the 'src' with the actual path to your audio file -->
+            <audio class="audio-player" controls preload="metadata">
+              <source src="assets/audios/audio1.m4a" type="audio/mpeg">
+              Your browser does not support the audio element.
+            </audio>
+          </div>
+        </div>
+
+        <!-- Audio Item 2 -->
+        <div class="audio-item">
+          <div class="audio-header">
+            <span class="audio-title">Audio 2: Comptine des nombres</span>
+            <span class="audio-toggle-icon">+</span>
+          </div>
+          <div class="audio-content">
+            <!-- IMPORTANT: Replace the 'src' with the actual path to your audio file -->
+            <audio class="audio-player" controls preload="metadata">
+              <source src="assets/audios/audio2.m4a" type="audio/mpeg">
+              Your browser does not support the audio element.
+            </audio>
+          </div>
+        </div>
+
+        <!-- Audio Item 3 -->
+        <div class="audio-item">
+          <div class="audio-header">
+            <span class="audio-title">Audio 3: Les sons d’ animaux</span>
+            <span class="audio-toggle-icon">+</span>
+          </div>
+          <div class="audio-content">
+            <!-- IMPORTANT: Replace the 'src' with the actual path to your audio file -->
+            <audio class="audio-player" controls preload="metadata">
+              <source src="assets/audios/audio3.m4a" type="audio/mpeg">
+              Your browser does not support the audio element.
+            </audio>
+          </div>
+        </div>
+
+      </div>
+    </main>
+
+    <footer class="mooc-footer">
+      <a href="home.html">&larr; Back to Main Menu</a>
+    </footer>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const audioHeaders = document.querySelectorAll('.audio-header');
+
+      audioHeaders.forEach(header => {
+        header.addEventListener('click', () => {
+          const currentlyActiveItem = document.querySelector('.audio-item.active');
+          const clickedItem = header.parentElement;
+
+          // If there's an active item and it's not the one we just clicked, close it
+          if (currentlyActiveItem && currentlyActiveItem !== clickedItem) {
+            currentlyActiveItem.classList.remove('active');
+            // Also pause the audio if the section is closed
+            const audioPlayer = currentlyActiveItem.querySelector('audio');
+            if (audioPlayer) {
+              audioPlayer.pause();
+            }
+          }
+
+          // Toggle the active state of the clicked item
+          clickedItem.classList.toggle('active');
+        });
+      });
+    });
+  </script>
+
+</body>
+
+</html>

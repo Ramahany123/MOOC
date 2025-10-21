@@ -1,0 +1,182 @@
+/* ------------------- */
+/* --- Global Styles --- */
+/* ------------------- */
+:root {
+  --primary-color: #4A90E2;
+  --primary-hover: #357ABD;
+  --background-color: #F4F7FC;
+  --card-background: #FFFFFF;
+  --text-color: #333D4B;
+  --subtle-text: #8492A6;
+  --border-color: #E5E9F2;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  background-color: var(--background-color);
+  color: var(--text-color);
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  min-height: 100vh;
+  margin: 0;
+  padding: 20px;
+}
+
+/* ------------------- */
+/* --- Main Container --- */
+/* ------------------- */
+.mooc-container {
+  background-color: var(--card-background);
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.07);
+  width: 100%;
+  max-width: 800px;
+  text-align: center;
+  overflow: hidden;
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+
+/* --- Header Section --- */
+.mooc-header {
+  background-color: var(--primary-color);
+  color: white;
+  padding: 30px 20px;
+}
+
+.mooc-header h1 {
+  margin: 0 0 5px 0;
+  font-size: 1.8rem;
+  font-weight: 700;
+}
+
+.mooc-header p {
+  margin: 0;
+  font-size: 1rem;
+  opacity: 0.9;
+}
+
+/* --- Content Section --- */
+.mooc-content {
+  padding: 30px;
+  text-align: left;
+}
+
+/* --- Audio Accordion --- */
+.audio-accordion {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.audio-item {
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  overflow: hidden;
+  transition: all 0.3s ease-in-out;
+}
+
+.audio-item.active {
+  box-shadow: 0 8px 20px rgba(74, 144, 226, 0.15);
+  border-color: var(--primary-color);
+}
+
+.audio-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  cursor: pointer;
+  background-color: #fff;
+}
+
+.audio-header:hover {
+  background-color: #f9faff;
+}
+
+.audio-title {
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: var(--text-color);
+}
+
+.audio-toggle-icon {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: var(--primary-color);
+  transition: transform 0.3s ease;
+}
+
+.audio-item.active .audio-toggle-icon {
+  transform: rotate(45deg);
+}
+
+.audio-content {
+  max-height: 0;
+  overflow: hidden;
+  padding: 0 20px;
+  transition: max-height 0.4s ease-in-out, padding 0.4s ease-in-out;
+  background-color: #fafcff;
+}
+
+.audio-item.active .audio-content {
+  max-height: 150px;
+  /* Adjust if needed */
+  padding: 0px 20px 20px 20px;
+}
+
+.audio-player {
+  width: 100%;
+  border-radius: 8px;
+}
+
+/* --- Footer --- */
+.mooc-footer {
+  padding: 20px;
+  font-size: 0.9rem;
+  border-top: 1px solid var(--border-color);
+}
+
+.mooc-footer a {
+  color: var(--primary-color);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.mooc-footer a:hover {
+  text-decoration: underline;
+}
+
+/* --- Responsive Design --- */
+@media (max-width: 600px) {
+  body {
+    padding: 10px;
+  }
+
+  .mooc-container {
+    margin-top: 10px;
+  }
+
+  .mooc-content {
+    padding: 20px 15px;
+  }
+
+  .mooc-header h1 {
+    font-size: 1.5rem;
+  }
+
+  .audio-header {
+    padding: 15px;
+  }
+
+  .audio-title {
+    font-size: 1rem;
+  }
+}
