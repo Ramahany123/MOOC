@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard - French MOOC</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" type="text/css" href="styles/admin.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+
+</head>
+
+<body>
+
+  <div class="admin-container">
+    <header class="admin-header">
+      <h1>Admin Dashboard</h1>
+      <p>Student Progress Overview</p>
+    </header>
+
+    <section class="summary-cards">
+      <div class="card">
+        <div class="icon">👥</div>
+        <div class="card-info">
+          <h3>Total Students</h3>
+          <p class="value">12</p>
+        </div>
+      </div>
+      <div class="card">
+        <div class="icon">📈</div>
+        <div class="card-info">
+          <h3>Avg. Completion</h3>
+          <p class="value">68%</p>
+        </div>
+      </div>
+      <div class="card">
+        <div class="icon">✅</div>
+        <div class="card-info">
+          <h3>Avg. Quiz Score</h3>
+          <p class="value">82%</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="stats-container">
+      <table class="stats-table">
+        <thead>
+          <tr>
+            <th>Student Name</th>
+            <th>Videos Watched</th>
+            <th>Audios Listened</th>
+            <th>Quiz 1</th>
+            <th>Quiz 2</th>
+            <th>Quiz 3</th>
+            <th>Quiz 4</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Dummy Data Row 1 -->
+          <tr>
+            <td class="student-name">Alexandre Dupont</td>
+            <td>
+              <div class="progress-cell">
+                <div class="progress-bar">
+                  <div class="progress-bar-fill" style="width: 100%;"></div>
+                </div>
+                <span class="progress-text">4/4</span>
+              </div>
+            </td>
+            <td>
+              <div class="progress-cell">
+                <div class="progress-bar">
+                  <div class="progress-bar-fill" style="width: 100%;"></div>
+                </div>
+                <span class="progress-text">3/3</span>
+              </div>
+            </td>
+            <td><span class="quiz-score high">6/6</span></td>
+            <td><span class="quiz-score high">5/5</span></td>
+            <td><span class="quiz-score medium">4/6</span></td>
+            <td><span class="not-attempted">N/A</span></td>
+          </tr>
+          <!-- Dummy Data Row 2 -->
+          <tr>
+            <td class="student-name">Béatrice Leroy</td>
+            <td>
+              <div class="progress-cell">
+                <div class="progress-bar">
+                  <div class="progress-bar-fill" style="width: 75%;"></div>
+                </div>
+                <span class="progress-text">3/4</span>
+              </div>
+            </td>
+            <td>
+              <div class="progress-cell">
+                <div class="progress-bar">
+                  <div class="progress-bar-fill" style="width: 66%;"></div>
+                </div>
+                <span class="progress-text">2/3</span>
+              </div>
+            </td>
+            <td><span class="quiz-score medium">4/6</span></td>
+            <td><span class="quiz-score high">5/5</span></td>
+            <td><span class="not-attempted">N/A</span></td>
+            <td><span class="not-attempted">N/A</span></td>
+          </tr>
+          <!-- Dummy Data Row 3 -->
+          <tr>
+            <td class="student-name">Clément Martin</td>
+            <td>
+              <div class="progress-cell">
+                <div class="progress-bar">
+                  <div class="progress-bar-fill" style="width: 100%;"></div>
+                </div>
+                <span class="progress-text">4/4</span>
+              </div>
+            </td>
+            <td>
+              <div class="progress-cell">
+                <div class="progress-bar">
+                  <div class="progress-bar-fill" style="width: 100%;"></div>
+                </div>
+                <span class="progress-text">3/3</span>
+              </div>
+            </td>
+            <td><span class="quiz-score high">6/6</span></td>
+            <td><span class="quiz-score high">5/5</span></td>
+            <td><span class="quiz-score high">6/6</span></td>
+            <td><span class="quiz-score medium">4/6</span></td>
+          </tr>
+          <!-- Dummy Data Row 4 -->
+          <tr>
+            <td class="student-name">Diane Simon</td>
+            <td>
+              <div class="progress-cell">
+                <div class="progress-bar">
+                  <div class="progress-bar-fill" style="width: 25%;"></div>
+                </div>
+                <span class="progress-text">1/4</span>
+              </div>
+            </td>
+            <td>
+              <div class="progress-cell">
+                <div class="progress-bar">
+                  <div class="progress-bar-fill" style="width: 33%;"></div>
+                </div>
+                <span class="progress-text">1/3</span>
+              </div>
+            </td>
+            <td><span class="quiz-score low">2/6</span></td>
+            <td><span class="not-attempted">N/A</span></td>
+            <td><span class="not-attempted">N/A</span></td>
+            <td><span class="not-attempted">N/A</span></td>
+          </tr>
+          <!-- Dummy Data Row 5 -->
+          <tr>
+            <td class="student-name">Émile Petit</td>
+            <td>
+              <div class="progress-cell">
+                <div class="progress-bar">
+                  <div class="progress-bar-fill" style="width: 50%;"></div>
+                </div>
+                <span class="progress-text">2/4</span>
+              </div>
+            </td>
+            <td>
+              <div class="progress-cell">
+                <div class="progress-bar">
+                  <div class="progress-bar-fill" style="width: 33%;"></div>
+                </div>
+                <span class="progress-text">1/3</span>
+              </div>
+            </td>
+            <td><span class="quiz-score medium">5/6</span></td>
+            <td><span class="quiz-score low">2/5</span></td>
+            <td><span class="not-attempted">N/A</span></td>
+            <td><span class="not-attempted">N/A</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+  </div>
+
+</body>
+
+</html>
