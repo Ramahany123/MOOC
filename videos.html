@@ -92,27 +92,8 @@
     </footer>
   </div>
 
-  <script>
-    document.addEventListener('DOMContentLoaded', function () {
-      const videoHeaders = document.querySelectorAll('.video-header');
 
-      videoHeaders.forEach(header => {
-        header.addEventListener('click', () => {
-          const currentlyActiveItem = document.querySelector('.video-item.active');
-          const clickedItem = header.parentElement;
-
-          // If there's an active item and it's not the one we just clicked, close it
-          if (currentlyActiveItem && currentlyActiveItem !== clickedItem) {
-            currentlyActiveItem.classList.remove('active');
-          }
-
-          // Toggle the active state of the clicked item
-          clickedItem.classList.toggle('active');
-        });
-      });
-    });
-  </script>
-
+<script src="./js/video.js"></script>
 </body>
 
 </html>

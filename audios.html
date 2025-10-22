@@ -78,32 +78,7 @@
     </footer>
   </div>
 
-  <script>
-    document.addEventListener('DOMContentLoaded', function () {
-      const audioHeaders = document.querySelectorAll('.audio-header');
-
-      audioHeaders.forEach(header => {
-        header.addEventListener('click', () => {
-          const currentlyActiveItem = document.querySelector('.audio-item.active');
-          const clickedItem = header.parentElement;
-
-          // If there's an active item and it's not the one we just clicked, close it
-          if (currentlyActiveItem && currentlyActiveItem !== clickedItem) {
-            currentlyActiveItem.classList.remove('active');
-            // Also pause the audio if the section is closed
-            const audioPlayer = currentlyActiveItem.querySelector('audio');
-            if (audioPlayer) {
-              audioPlayer.pause();
-            }
-          }
-
-          // Toggle the active state of the clicked item
-          clickedItem.classList.toggle('active');
-        });
-      });
-    });
-  </script>
-
+<script src="./js/audios.js"></script>
 </body>
 
 </html>

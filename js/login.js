@@ -20,13 +20,23 @@ loginForm.addEventListener("submit", async (e) => {
 
   const phone = document.getElementById("phone").value.trim();
   const password = document.getElementById("password").value.trim();
-
   const email = `${phone.replace(/\D/g, '')}@fakeuser.com`;
 
   try {
     await signInWithEmailAndPassword(auth, email, password);
     alert("Login successful!");
-    window.location.href = "./home.html"; 
+
+    // ✅ Get any previous user info (with name)
+    const existingUser = JSON.parse(localStorage.getItem('loggedUser')) || {};
+
+    // ✅ Save name if it exists, otherwise keep as empty string
+    localStorage.setItem('loggedUser', JSON.stringify({
+      name: existingUser.name || "",  
+      phone: phone,
+      email: email
+    }));
+
+    window.location.href = "./home.html";
   } catch (error) {
     alert(error.message);
   }
