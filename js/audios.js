@@ -6,17 +6,17 @@ document.addEventListener('DOMContentLoaded', function () {
           const currentlyActiveItem = document.querySelector('.audio-item.active');
           const clickedItem = header.parentElement;
 
-          // If there's an active item and it's not the one we just clicked, close it
+          
           if (currentlyActiveItem && currentlyActiveItem !== clickedItem) {
             currentlyActiveItem.classList.remove('active');
-            // Also pause the audio if the section is closed
+            
             const audioPlayer = currentlyActiveItem.querySelector('audio');
             if (audioPlayer) {
               audioPlayer.pause();
             }
           }
 
-          // Toggle the active state of the clicked item
+          
           clickedItem.classList.toggle('active');
         });
       });
@@ -28,7 +28,6 @@ const user = JSON.parse(localStorage.getItem('loggedUser'));
 document.addEventListener('DOMContentLoaded', function () {
   const audioElements = document.querySelectorAll('.audio-player');
 
-  // ✅ Get logged user safely from localStorage
   const user = JSON.parse(localStorage.getItem('loggedUser'));
 
   if (!user) {
@@ -40,7 +39,7 @@ document.addEventListener('DOMContentLoaded', function () {
   audioElements.forEach((audio, index) => {
     let listened = false;
 
-    // ✅ Fixed: changed from "video" to "audio"
+    
     audio.addEventListener('timeupdate', () => {
       if (!listened && audio.currentTime >= 30) {
         listened = true;
@@ -50,7 +49,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         console.log(`${userName} listened 30 seconds of ${audioTitle}`);
 
-        // ✅ Save progress with name, email, and audio title
+        
         saveAudioProgress(userName, user.email, audioTitle);
       }
     });
@@ -60,7 +59,7 @@ document.addEventListener('DOMContentLoaded', function () {
 function saveAudioProgress(userName, userEmail, audioName) {
   const progress = JSON.parse(localStorage.getItem('audioProgress')) || [];
 
-  // ✅ Add record with name, email, and timestamp
+
   progress.push({
     userName,
     userEmail,
