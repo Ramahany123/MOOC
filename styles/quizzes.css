@@ -1,0 +1,371 @@
+:root {
+  --primary-color: #4A90E2;
+  --primary-hover: #357ABD;
+  --background-color: #F4F7FC;
+  --card-background: #FFFFFF;
+  --text-color: #333D4B;
+  --subtle-text: #8492A6;
+  --border-color: #E5E9F2;
+  --correct-answer: #28a745;
+  --incorrect-answer: #dc3545;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  background-color: var(--background-color);
+  color: var(--text-color);
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  min-height: 100vh;
+  margin: 0;
+  padding: 20px;
+}
+
+.mooc-container {
+  background-color: var(--card-background);
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.07);
+  width: 100%;
+  max-width: 700px;
+  text-align: center;
+  overflow: hidden;
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+
+.mooc-header {
+  background-color: var(--primary-color);
+  color: white;
+  padding: 30px 20px;
+}
+
+.mooc-header h1 {
+  margin: 0 0 5px 0;
+  font-size: 1.8rem;
+  font-weight: 700;
+}
+
+.mooc-header p {
+  margin: 0;
+  font-size: 1rem;
+  opacity: 0.9;
+}
+
+.mooc-content {
+  padding: 30px;
+  text-align: left;
+}
+
+/* --- Quiz Selection Screen --- */
+#quiz-selection {
+  text-align: center;
+}
+
+#quiz-selection h2 {
+  font-size: 1.5rem;
+  margin-bottom: 10px;
+}
+
+#quiz-selection p {
+  color: var(--subtle-text);
+  margin-bottom: 30px;
+}
+
+.quiz-menu {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 15px;
+}
+
+.quiz-choice-btn {
+  background-color: #fff;
+  color: var(--primary-color);
+  border: 1px solid var(--border-color);
+  padding: 20px;
+  border-radius: 12px;
+  font-size: 1.1rem;
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  width: 100%;
+}
+
+.quiz-choice-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(74, 144, 226, 0.15);
+  border-color: var(--primary-color);
+}
+
+/* --- Main Quiz Area --- */
+#quiz-container {
+  display: none;
+  /* Hidden by default */
+}
+
+#quiz-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+}
+
+#quiz-title {
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin: 0;
+  text-align: left;
+}
+
+#quiz-progress {
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--subtle-text);
+}
+
+#question-text {
+  font-size: 1.2rem;
+  margin-bottom: 25px;
+  line-height: 1.6;
+  text-align: left;
+}
+
+#answer-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* MCQ Button Styles */
+.option-btn {
+  background-color: #fff;
+  border: 1px solid var(--border-color);
+  padding: 15px;
+  border-radius: 8px;
+  font-size: 1rem;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  width: 100%;
+}
+
+.option-btn:hover:not(:disabled) {
+  background-color: #f9faff;
+  border-color: var(--primary-color);
+}
+
+/* Matching Question Styles */
+.matching-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+  align-items: center;
+}
+
+.match-item,
+.match-select {
+  padding: 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  font-size: 1rem;
+}
+
+.match-item {
+  background-color: #f8f9fa;
+}
+
+.match-select {
+  width: 100%;
+  cursor: pointer;
+}
+
+.match-select.correct {
+  border-color: var(--correct-answer);
+  background-color: #e9f7ec;
+}
+
+.match-select.incorrect {
+  border-color: var(--incorrect-answer);
+  background-color: #fdeeee;
+}
+
+/* Written Question Styles */
+.written-input {
+  width: 100%;
+  padding: 15px;
+  font-size: 1rem;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  font-family: 'Inter', sans-serif;
+}
+
+.written-input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
+}
+
+.written-input.correct {
+  border-color: var(--correct-answer);
+  background-color: #e9f7ec;
+}
+
+.written-input.incorrect {
+  border-color: var(--incorrect-answer);
+  background-color: #fdeeee;
+}
+
+
+.option-btn.correct,
+.match-item.correct {
+  background-color: #e9f7ec;
+  border-color: var(--correct-answer);
+  color: var(--correct-answer);
+  font-weight: bold;
+}
+
+.option-btn.incorrect,
+.match-item.incorrect {
+  background-color: #fdeeee;
+  border-color: var(--incorrect-answer);
+  color: var(--incorrect-answer);
+}
+
+.option-btn:disabled {
+  cursor: not-allowed;
+}
+
+#feedback {
+  margin-top: 20px;
+  font-weight: 500;
+  min-height: 24px;
+  /* Prevents layout jump */
+  text-align: center;
+}
+
+#quiz-action-btn {
+  display: block;
+  width: 100%;
+  padding: 15px;
+  font-size: 1.1rem;
+  font-weight: 500;
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  margin-top: 20px;
+  transition: background-color 0.2s ease;
+}
+
+#quiz-action-btn:hover {
+  background-color: var(--primary-hover);
+}
+
+#quiz-action-btn:disabled {
+  background-color: var(--subtle-text);
+  cursor: not-allowed;
+}
+
+/* --- Results Screen --- */
+#results-container {
+  display: none;
+  text-align: center;
+}
+
+#results-container h2 {
+  font-size: 1.8rem;
+  margin-bottom: 15px;
+}
+
+#score-text {
+  font-size: 1.2rem;
+  margin-bottom: 30px;
+}
+
+.results-actions {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.results-btn {
+  padding: 12px 25px;
+  font-size: 1rem;
+  font-weight: 500;
+  border-radius: 8px;
+  cursor: pointer;
+  border: 1px solid var(--primary-color);
+  transition: all 0.2s ease;
+}
+
+.restart-btn {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.menu-btn {
+  background-color: white;
+  color: var(--primary-color);
+}
+
+.restart-btn:hover {
+  background-color: var(--primary-hover);
+}
+
+.menu-btn:hover {
+  background-color: #f9faff;
+}
+
+/* --- Footer --- */
+.mooc-footer {
+  padding: 20px;
+  font-size: 0.9rem;
+  border-top: 1px solid var(--border-color);
+}
+
+.mooc-footer a {
+  color: var(--primary-color);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.mooc-footer a:hover {
+  text-decoration: underline;
+}
+
+/* --- Responsive Design --- */
+@media (max-width: 600px) {
+  body {
+    padding: 10px;
+  }
+
+  .mooc-container {
+    margin-top: 10px;
+    margin-bottom: 10px;
+  }
+
+  .mooc-content {
+    padding: 20px 15px;
+  }
+
+  .mooc-header h1 {
+    font-size: 1.5rem;
+  }
+
+  #quiz-title {
+    font-size: 1.2rem;
+  }
+
+  .matching-grid {
+    grid-template-columns: 1fr;
+  }
+}
