@@ -188,10 +188,10 @@
                     
                     // Store quiz score by quiz number
                     const quizNumber = quizId.split('-')[1] || '1';
-                    quizScores[`quiz${quizNumber}`] = percentage;
+                    quizScores[`quiz${quizNumber}`] = `${score}%`;
                     
                     // Add to overall quiz statistics
-                    totalQuizScore += percentage;
+                    totalQuizScore += score;
                     quizCount++;
                 }
                 

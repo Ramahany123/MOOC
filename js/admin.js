@@ -106,6 +106,7 @@ async function loadAdminDashboard() {
             for (const quizId of QUIZ_NAMES) {
                 const quiz = quizzes[quizId];
                 if (quiz && quiz.score !== undefined) {
+                    console.log(`Quiz ${quizId} score: ${quiz.score}`);
                     quizScoresDisplay.push(`${quiz.score}%`);
                     totalQuizScore += quiz.score;
                     totalQuizAttempts++;
