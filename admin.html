@@ -327,8 +327,20 @@
 
             // Update summary cards
             document.getElementById('total-students').textContent = totalStudents;
-            document.getElementById('avg-completion').textContent =
-                usersWithVideoData > 0 ? Math.round(totalVideoProgress / usersWithVideoData) + '%' : '0%';
+            // Calculate average completion (video and audio)
+            const avgVideo = usersWithVideoData > 0 ? (totalVideoProgress / usersWithVideoData) : 0;
+            const avgAudio = usersListenAudioData > 0 ? (totalAudioProgress / usersListenAudioData) : 0;
+            let avgCompletion = 0;
+
+            if (usersWithVideoData > 0 && usersListenAudioData > 0) {
+                avgCompletion = Math.round((avgVideo + avgAudio) / 2); // Average of both
+            } else if (usersWithVideoData > 0) {
+                avgCompletion = Math.round(avgVideo); // Only video data exists
+            } else if (usersListenAudioData > 0) {
+                avgCompletion = Math.round(avgAudio); // Only audio data exists
+            }
+
+            document.getElementById('avg-completion').textContent = `${avgCompletion}%`;
             document.getElementById('avg-quiz-score').textContent =
                 quizCount > 0 ? Math.round(totalQuizScore / quizCount) + '%' : '0%';
 
