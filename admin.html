@@ -207,9 +207,10 @@
         }
 
         // Process the data for display
+        // Process the data for display
         function processData(users, tracking) {
             // Calculate summary statistics
-            const totalStudents = Object.keys(users).length;
+            let totalStudents = 0; // <-- FIX 1: Initialize to 0
             let totalVideoProgress = 0;
             let totalAudioProgress = 0;
             let totalQuizScore = 0;
@@ -223,6 +224,14 @@
 
             // Process each user
             for (const userId in users) {
+                // --- FIX 2: SKIP THE ADMIN ACCOUNT ---
+                if (userId === "01000000000") {
+                    continue; // Skip this user and go to the next one
+                }
+                // --- END FIX ---
+
+                totalStudents++; // Now we only count non-admin users
+
                 const user = users[userId];
                 const userTracking = tracking && tracking[userId] ? tracking[userId] : {};
 
