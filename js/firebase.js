@@ -2,24 +2,22 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebas
 import { getDatabase, ref, set, get } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
 
 // --- Utility for Hashing Passwords (Client-Side SHA-256) ---
-// This is used to securely store the password in the database.
 async function hashPassword(password) {
     const encoder = new TextEncoder();
     const data = encoder.encode(password);
     const hashBuffer = await crypto.subtle.digest('SHA-256', data);
     const hashArray = Array.from(new Uint8Array(hashBuffer));
-    // Convert bytes to hex string
     const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
     return hashHex;
 }
 
 const firebaseConfig = {
-    apiKey: "AIzaSyCnCovkec0YaXmgpcnNLx1qiCpGG7-iipU",
-    authDomain: "educational-site-f1fac.firebaseapp.com",
-    projectId: "educational-site-f1fac",
-    storageBucket: "educational-site-f1fac.firebasestorage.app",
-    messagingSenderId: "868437050505",
-    appId: "1:868437050505:web:8ca5d61feee67a67647258"
+    apiKey: "AIzaSyCnCovkec0YaXmgpcnNLx1qiCpGG7-iipU",
+    authDomain: "educational-site-f1fac.firebaseapp.com",
+    projectId: "educational-site-f1fac",
+    storageBucket: "educational-site-f1fac.firebasestorage.app",
+    messagingSenderId: "868437050505",
+    appId: "1:868437050505:web:8ca5d61feee67a67647258"
 };
 
 const app = initializeApp(firebaseConfig);
@@ -28,19 +26,19 @@ const db = getDatabase(app);
 const registerForm = document.getElementById('registerForm');
 
 registerForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
+    e.preventDefault();
 
-    const name = document.getElementById('name').value.trim();
-    const phone = document.getElementById('phone').value.trim();
-    const password = document.getElementById('password').value.trim();
-    const cleanedPhone = phone.replace(/\D/g, '');
-    const email = `${cleanedPhone}@fakeuser.com`; 
+    const name = document.getElementById('name').value.trim();
+    const phone = document.getElementById('phone').value.trim();
+    const password = document.getElementById('password').value.trim();
+    const cleanedPhone = phone.replace(/\D/g, '');
+    const email = `${cleanedPhone}@fakeuser.com`; 
 
     const errorEl = document.getElementById('register-error-message');
     if(errorEl) errorEl.classList.add('hidden');
 
-    try {
-        // --- 1. CHECK FOR EXISTING USER ---
+    try {
+        // --- 1. CHECK FOR EXISTING USER (UID is phone number) ---
         const uid = cleanedPhone; 
         const usersSnapshot = await get(ref(db, 'users/' + uid));
         
@@ -51,20 +49,27 @@ registerForm.addEventListener('submit', async (e) => {
         // --- 2. HASH PASSWORD ---
         const hashedPassword = await hashPassword(password);
         
-        // --- 3. CREATE USER DATA IN REALTIME DATABASE ---
+        // --- 3. CREATE USER DATA IN REALTIME DATABASE (users node) ---
         await set(ref(db, 'users/' + uid), {
             name: name,
             email: email, 
             phone: cleanedPhone,
             passwordHash: hashedPassword 
         });
-        
+
+        // ⭐ 4. INITIALIZE EMPTY TRACKING NODE (tracking node) ---
+        // This is crucial for the Admin Dashboard to count them as students.
+        await set(ref(db, 'tracking/' + uid), {}); 
+        console.log(`Initialized tracking node for new user: ${uid}`);
+
+        // --- 5. FINALIZE ---
         alert('Registration successful!');
-        navigation(name, cleanedPhone, uid); 
-    } catch (error) {
+        navigation(name, cleanedPhone, uid); 
+    } catch (error) {
         let errorMessage = error.message;
-        alert(errorMessage);
-    }
+        alert(errorMessage);
+        console.error("Registration Error:", error);
+    }
 });
 
 function navigation(name, phone, uid) {
@@ -76,6 +81,9 @@ function navigation(name, phone, uid) {
         email: email,
         uid: uid 
     }));
+
+    // Store phone separately for easy access by tracking scripts
+    localStorage.setItem('userPhone', uid); 
 
     window.location.href = "./index.html"; 
 }

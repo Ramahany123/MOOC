@@ -1,7 +1,4 @@
-import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
 import { ref, update, get } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
-
-// Ensure 'db' and 'auth' are available globally from your HTML setup script (as shown previously)
 
 document.addEventListener('DOMContentLoaded', function () {
     const audioHeaders = document.querySelectorAll('.audio-header');
@@ -26,63 +23,75 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     // --- Audio Tracking Logic ---
-    onAuthStateChanged(window.auth, (user) => {
-        if (!user) {
-            console.warn("User not authenticated. Audio tracking disabled.");
-            return;
-        }
-        
-        audioElements.forEach((audio, index) => {
-            // Generate a unique ID for the audio track
-            const audioTitle = audio.closest('.audio-item').querySelector('.audio-title') 
+    const currentUserPhone = getCurrentUserPhone();
+    
+    if (!currentUserPhone) {
+        console.warn("User not authenticated. Audio tracking disabled.");
+        return;
+    }
+    
+    audioElements.forEach((audio, index) => {
+        const audioTitle = audio.closest('.audio-item').querySelector('.audio-title') 
                              ? audio.closest('.audio-item').querySelector('.audio-title').textContent.trim().replace(/[.:\s]/g, '_')
                              : `audio_track_${index + 1}`;
-            const audioId = `audio_${index + 1}_${audioTitle}`; 
+        const audioId = `audio_${index + 1}_${audioTitle}`; 
 
-            // Load last listened time on audio load
-            loadLastProgress(user.uid, audioId, audio);
+        loadLastProgress(currentUserPhone, audioId, audio);
 
-            let completedOnce = false; 
-            
-            // 1. Time Update (Save progress periodically)
-            let lastSavedTime = 0;
-            const SAVE_INTERVAL = 10; 
+        let completedOnce = false; 
+        
+        let lastSavedTime = 0;
+        const SAVE_INTERVAL = 10; 
 
-            audio.addEventListener('timeupdate', () => {
-                const currentTime = Math.floor(audio.currentTime);
-                if (!audio.paused && currentTime > lastSavedTime + SAVE_INTERVAL) {
-                    saveProgressToFirebase(user.uid, audioId, audio, false);
-                    lastSavedTime = currentTime;
-                }
-            });
+        audio.addEventListener('timeupdate', () => {
+            const currentTime = Math.floor(audio.currentTime);
+            if (!audio.paused && currentTime > lastSavedTime + SAVE_INTERVAL) {
+                saveProgressToFirebase(currentUserPhone, audioId, audio, false);
+                lastSavedTime = currentTime;
+            }
+        });
 
-            // 2. Pause/Seek (Save progress on pause/manual seek)
-            audio.addEventListener('pause', () => {
-                saveProgressToFirebase(user.uid, audioId, audio, false);
-            });
-            audio.addEventListener('seeking', () => {
-                saveProgressToFirebase(user.uid, audioId, audio, false);
-            });
+        audio.addEventListener('pause', () => {
+            saveProgressToFirebase(currentUserPhone, audioId, audio, false);
+        });
+        audio.addEventListener('seeking', () => {
+            saveProgressToFirebase(currentUserPhone, audioId, audio, false);
+        });
 
-            // 3. Ended (Mark as completed)
-            audio.addEventListener('ended', () => {
-                if (!completedOnce) {
-                    saveProgressToFirebase(user.uid, audioId, audio, true);
-                    completedOnce = true;
-                    console.log(`Audio ${audioId} marked as completed.`);
-                }
-            });
+        audio.addEventListener('ended', () => {
+            if (!completedOnce) {
+                saveProgressToFirebase(currentUserPhone, audioId, audio, true);
+                completedOnce = true;
+                console.log(`Audio ${audioId} marked as completed.`);
+            }
         });
     });
 });
 
+/**
+ * Gets the current user's phone number from your custom auth system
+ */
+function getCurrentUserPhone() {
+    const loggedUserStr = localStorage.getItem('loggedUser');
+    if (loggedUserStr) {
+        try {
+            const user = JSON.parse(loggedUserStr);
+            return user.phone; // Extract phone from the stored object
+        } catch (e) {
+            console.error("Error parsing loggedUser from localStorage:", e);
+        }
+    }
+    return null;
+}
 
 /**
  * Saves the current audio progress to Firebase Realtime Database.
  */
-function saveProgressToFirebase(userId, audioId, audioElement, isCompleted) {
-    // Path: tracking/USER_UID/audio_tracking/AUDIO_ID  <-- KEY CHANGE HERE
-    const trackingRef = ref(window.db, `tracking/${userId}/audio_tracking/${audioId}`);
+function saveProgressToFirebase(userPhone, audioId, audioElement, isCompleted) {
+    if (!window.db) return;
+    
+    // Path: tracking/PHONE_NUMBER/audio_tracking/AUDIO_ID
+    const trackingRef = ref(window.db, `tracking/${userPhone}/audio_tracking/${audioId}`);
     const currentTime = Math.floor(audioElement.currentTime);
     const totalDuration = Math.floor(audioElement.duration);
 
@@ -105,12 +114,13 @@ function saveProgressToFirebase(userId, audioId, audioElement, isCompleted) {
     });
 }
 
-
 /**
  * Loads the last listened time from Firebase and sets the audio time.
  */
-async function loadLastProgress(userId, audioId, audioElement) {
-    const trackingRef = ref(window.db, `tracking/${userId}/audio_tracking/${audioId}`);
+async function loadLastProgress(userPhone, audioId, audioElement) {
+    if (!window.db) return;
+
+    const trackingRef = ref(window.db, `tracking/${userPhone}/audio_tracking/${audioId}`);
     
     try {
         const snapshot = await get(trackingRef);
@@ -119,9 +129,9 @@ async function loadLastProgress(userId, audioId, audioElement) {
             const lastTime = data.last_listened_time;
             audioElement.addEventListener('loadedmetadata', () => {
                  if (audioElement.readyState >= 2) {
-                    audioElement.currentTime = lastTime;
-                    console.log(`Resumed audio ${audioId} at ${lastTime}s.`);
-                }
+                     audioElement.currentTime = lastTime;
+                     console.log(`Resumed audio ${audioId} at ${lastTime}s.`);
+                 }
             }, { once: true });
         }
     } catch(error) {

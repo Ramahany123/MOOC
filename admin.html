@@ -7,8 +7,9 @@
     <title>Admin Dashboard - French MOOC</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
     <style>
-        /* Base styles adapted from your CSS */
         body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; }
         .admin-container { max-width: 1200px; margin: 0 auto; padding: 2rem 1rem; }
         .card { transition: transform 0.2s; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05); }
@@ -17,6 +18,12 @@
         .stats-table th { background-color: #f9fafb; font-weight: 600; text-transform: uppercase; font-size: 0.8rem; color: #4b5563; }
         .stats-table tbody tr:hover { background-color: #f3f4f6; }
         .student-name { font-weight: 500; color: #1f2937; }
+        .progress-bar { height: 8px; background-color: #e5e7eb; border-radius: 4px; overflow: hidden; }
+        .progress-fill { height: 100%; background-color: #3b82f6; transition: width 0.5s ease-in-out; }
+        .score-cell { font-weight: 600; }
+        .score-high { color: #10b981; }
+        .score-medium { color: #f59e0b; }
+        .score-low { color: #ef4444; }
         @media (max-width: 768px) {
             .summary-cards { grid-template-columns: 1fr; }
             .stats-table { display: block; overflow-x: auto; white-space: nowrap; }
@@ -32,7 +39,6 @@
             <p class="text-gray-500 mt-1">Student Progress Overview</p>
         </header>
 
-        <!-- Summary Cards -->
         <section class="summary-cards grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
             <div class="card bg-white p-6 rounded-xl shadow-lg flex items-center space-x-4">
                 <div class="icon text-3xl text-blue-500 bg-blue-500/10 p-4 rounded-full">👥</div>
@@ -57,7 +63,6 @@
             </div>
         </section>
 
-        <!-- Stats Table -->
         <section class="stats-container bg-white p-6 rounded-xl shadow-lg">
             <h2 class="text-xl font-semibold text-gray-900 mb-4">Detailed Student Progress</h2>
             <div class="overflow-x-auto">
@@ -66,7 +71,7 @@
                         <tr>
                             <th>Student Name</th>
                             <th>Videos Watched</th>
-                            <th>Audios Listened</th>
+                            <th>Video Progress</th>
                             <th>Quiz 1</th>
                             <th>Quiz 2</th>
                             <th>Quiz 3</th>
@@ -75,7 +80,7 @@
                     </thead>
                     <tbody id="stats-table-body" class="divide-y divide-gray-200">
                         <tr>
-                            <td colspan="7" class="text-center py-4 text-gray-500">Authenticating and fetching data...</td>
+                            <td colspan="7" class="text-center py-4 text-gray-500">Connecting to Firebase...</td>
                         </tr>
                     </tbody>
                 </table>
@@ -83,28 +88,171 @@
         </section>
     </div>
 
-    <!-- Firebase Initialization and Script Link -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
-        import { getAuth, signInWithCustomToken, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
-        import { getDatabase } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
+    <script>
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyCnCovkec0YaXmgpcnNLx1qiCpGG7-iipU",
+            authDomain: "educational-site-f1fac.firebaseapp.com",
+            databaseURL: "https://educational-site-f1fac-default-rtdb.firebaseio.com",
+            projectId: "educational-site-f1fac",
+            storageBucket: "educational-site-f1fac.firebasestorage.app",
+            messagingSenderId: "868437050505",
+            appId: "1:868437050505:web:8ca5d61feee67a67647258",
+            measurementId: "G-785N8W65W5"
+        };
 
-        // Global variables provided by the environment
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
-        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
 
-        if (firebaseConfig.apiKey) {
-            const app = initializeApp(firebaseConfig);
-            window.auth = getAuth(app);
-            window.db = getDatabase(app);
-        } else {
-             console.error("Firebase config missing. Cannot initialize services.");
+        // Function to fetch and process data
+        async function fetchData() {
+            try {
+                document.getElementById('stats-table-body').innerHTML = 
+                    '<tr><td colspan="7" class="text-center py-4 text-gray-500">Fetching data from Firebase...</td></tr>';
+
+                // Get users data
+                const usersSnapshot = await database.ref('users').once('value');
+                const users = usersSnapshot.val();
+                
+                if (!users) {
+                    throw new Error('No users data found');
+                }
+
+                // Get tracking data
+                const trackingSnapshot = await database.ref('tracking').once('value');
+                const tracking = trackingSnapshot.val();
+                
+                // Process data for display
+                processData(users, tracking);
+            } catch (error) {
+                console.error("Error fetching data:", error);
+                document.getElementById('stats-table-body').innerHTML = 
+                    '<tr><td colspan="7" class="text-center py-4 text-red-500">Error loading data: ' + error.message + '</td></tr>';
+                
+                // Set default values on error
+                document.getElementById('total-students').textContent = 'Error';
+                document.getElementById('avg-completion').textContent = 'Error';
+                document.getElementById('avg-quiz-score').textContent = 'Error';
+            }
         }
-        
-        // Link to the external logic script
+
+        // Process the data for display
+        function processData(users, tracking) {
+            // Calculate summary statistics
+            const totalStudents = Object.keys(users).length;
+            let totalVideoProgress = 0;
+            let totalQuizScore = 0;
+            let quizCount = 0;
+            let usersWithVideoData = 0;
+            
+            // Prepare table data
+            const tableRows = [];
+            
+            // Process each user
+            for (const userId in users) {
+                const user = users[userId];
+                const userTracking = tracking && tracking[userId] ? tracking[userId] : {};
+                
+                // Get video tracking data
+                const videoTracking = userTracking.video_tracking || {};
+                const videosWatched = Object.keys(videoTracking).length;
+                
+                // Calculate video progress percentage
+                let videoProgress = 0;
+                if (videosWatched > 0) {
+                    let totalWatchedTime = 0;
+                    let totalDuration = 0;
+                    
+                    for (const videoId in videoTracking) {
+                        const video = videoTracking[videoId];
+                        totalWatchedTime += video.last_watched_time || 0;
+                        totalDuration += video.total_duration || 1; // Avoid division by zero
+                    }
+                    
+                    videoProgress = Math.round((totalWatchedTime / totalDuration) * 100);
+                    totalVideoProgress += videoProgress;
+                    usersWithVideoData++;
+                }
+                
+                // Get quiz data
+                const quizzes = userTracking.quizzes || {};
+                const quizScores = {};
+                
+                // Process each quiz
+                for (const quizId in quizzes) {
+                    const quiz = quizzes[quizId];
+                    const score = quiz.score || 0;
+                    const totalQuestions = quiz.total_questions || 1;
+                    const percentage = Math.round((score / totalQuestions) * 100);
+                    
+                    // Store quiz score by quiz number
+                    const quizNumber = quizId.split('-')[1] || '1';
+                    quizScores[`quiz${quizNumber}`] = percentage;
+                    
+                    // Add to overall quiz statistics
+                    totalQuizScore += percentage;
+                    quizCount++;
+                }
+                
+                // Create table row for this user
+                tableRows.push(`
+                    <tr>
+                        <td class="student-name">${user.name || 'Unknown'}</td>
+                        <td class="text-center">${videosWatched}</td>
+                        <td>
+                            <div class="flex items-center space-x-2">
+                                <div class="progress-bar w-24">
+                                    <div class="progress-fill" style="width: ${videoProgress}%"></div>
+                                </div>
+                                <span class="text-sm">${videoProgress}%</span>
+                            </div>
+                        </td>
+                        <td class="score-cell ${getScoreClass(quizScores.quiz1)} text-center">${quizScores.quiz1 || '-'}</td>
+                        <td class="score-cell ${getScoreClass(quizScores.quiz2)} text-center">${quizScores.quiz2 || '-'}</td>
+                        <td class="score-cell ${getScoreClass(quizScores.quiz3)} text-center">${quizScores.quiz3 || '-'}</td>
+                        <td class="score-cell ${getScoreClass(quizScores.quiz4)} text-center">${quizScores.quiz4 || '-'}</td>
+                    </tr>
+                `);
+            }
+            
+            // Update summary cards
+            document.getElementById('total-students').textContent = totalStudents;
+            document.getElementById('avg-completion').textContent = 
+                usersWithVideoData > 0 ? Math.round(totalVideoProgress / usersWithVideoData) + '%' : '0%';
+            document.getElementById('avg-quiz-score').textContent = 
+                quizCount > 0 ? Math.round(totalQuizScore / quizCount) + '%' : '0%';
+            
+            // Update table
+            const tableBody = document.getElementById('stats-table-body');
+            if (tableRows.length > 0) {
+                tableBody.innerHTML = tableRows.join('');
+            } else {
+                tableBody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-gray-500">No student data found.</td></tr>';
+            }
+        }
+
+        // Helper function to determine score class for styling
+        function getScoreClass(score) {
+            if (!score) return '';
+            if (score >= 80) return 'score-high';
+            if (score >= 60) return 'score-medium';
+            return 'score-low';
+        }
+
+        // Initialize the dashboard when the page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            fetchData();
+            
+            // Optional: Set up real-time updates
+            // database.ref('users').on('value', (snapshot) => {
+            //     const users = snapshot.val();
+            //     database.ref('tracking').once('value').then((trackingSnapshot) => {
+            //         processData(users, trackingSnapshot.val());
+            //     });
+            // });
+        });
     </script>
-    <script src="js/admin.js" type="module"></script>
 
 </body>
 
