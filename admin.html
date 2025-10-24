@@ -72,6 +72,8 @@
                             <th>Student Name</th>
                             <th>Videos Watched</th>
                             <th>Video Progress</th>
+                            <th>Audio Listened</th>
+                            <th>Audio Progress</th>
                             <th>Quiz 1</th>
                             <th>Quiz 2</th>
                             <th>Quiz 3</th>
@@ -142,9 +144,12 @@
             // Calculate summary statistics
             const totalStudents = Object.keys(users).length;
             let totalVideoProgress = 0;
+            let totalAudioProgress = 0;
             let totalQuizScore = 0;
             let quizCount = 0;
             let usersWithVideoData = 0;
+            
+            let usersListenAudioData = 0;
             
             // Prepare table data
             const tableRows = [];
@@ -156,7 +161,9 @@
                 
                 // Get video tracking data
                 const videoTracking = userTracking.video_tracking || {};
+                const audioTracking = userTracking.audio_tracking || {};
                 const videosWatched = Object.keys(videoTracking).length;
+                const audiosListened= Object.keys(audioTracking).length;
                 
                 // Calculate video progress percentage
                 let videoProgress = 0;
@@ -173,6 +180,22 @@
                     videoProgress = Math.round((totalWatchedTime / totalDuration) * 100);
                     totalVideoProgress += videoProgress;
                     usersWithVideoData++;
+                }
+                // Calculate audio progress percentage
+                let audioProgress = 0;
+                if (audioProgress > 0) {
+                    let totallistenedTime = 0;
+                    let totalDuration = 0;
+                    
+                    for (const AudioId in audioTracking) {
+                        const audio = audioTracking[AudioId];
+                        totallistenedTime += audio.last_watched_time || 0;
+                        totalDuration += audio.total_duration || 1; // Avoid division by zero
+                    }
+                    
+                    audioProgress = Math.round((totalWatchedTime / totalDuration) * 100);
+                    totalAudioProgress += audioProgress;
+                    usersListenAudioData++;
                 }
                 
                 // Get quiz data
@@ -206,6 +229,15 @@
                                     <div class="progress-fill" style="width: ${videoProgress}%"></div>
                                 </div>
                                 <span class="text-sm">${videoProgress}%</span>
+                            </div>
+                        </td>
+                        <td class="text-center">${audiosListened}</td>
+                        <td>
+                            <div class="flex items-center space-x-2">
+                                <div class="progress-bar w-24">
+                                    <div class="progress-fill" style="width: ${audioProgress}%"></div>
+                                </div>
+                                <span class="text-sm">${audioProgress}%</span>
                             </div>
                         </td>
                         <td class="score-cell ${getScoreClass(quizScores.quiz1)} text-center">${quizScores.quiz1 || '-'}</td>
