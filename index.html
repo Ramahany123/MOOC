@@ -17,18 +17,21 @@
 
     <main class="form-content">
       <form id="loginForm">
-        <div class="form-group">
-          <label for="phone">Phone Number</label>
-          <input type="tel" id="phone" name="phone" class="form-input" placeholder="Enter your phone number" required>
-        </div>
+  <div class="form-group">
+    <label for="phone">Phone Number</label>
+    <input type="tel" id="phone" name="phone" class="form-input" placeholder="Enter your phone number" required>
+  </div>
 
-        <div class="form-group">
-          <label for="password">Password</label>
-          <input type="password" id="password" name="password" class="form-input" placeholder="Enter your password" required>
-        </div>
+  <div class="form-group">
+    <label for="password">Password</label>
+    <input type="password" id="password" name="password" class="form-input" placeholder="Enter your password" required>
+  </div>
 
-        <button type="submit" class="submit-btn">Login</button>
-      </form>
+  <p id="error-message" class="hidden" style="color:red; margin-bottom:10px;"></p>
+
+  <button type="submit" id="login-btn" class="submit-btn">Login</button>
+</form>
+
 
       <p class="form-footer-link">
         Don’t have an account? <a href="./registration.html">Sign up</a>

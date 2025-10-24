@@ -58,7 +58,39 @@
     </footer>
   </div>
 
-  <script src="js/quizzes.js"></script>
+   <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
+        import { getDatabase } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCnCovkec0YaXmgpcnNLx1qiCpGG7-iipU",
+            authDomain: "educational-site-f1fac.firebaseapp.com",
+            projectId: "educational-site-f1fac",
+            storageBucket: "educational-site-f1fac.firebasestorage.app",
+            messagingSenderId: "868437050505",
+            appId: "1:868437050505:web:8ca5d61feee67a67647258"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        
+        // Initialize the Realtime Database and make it global
+        window.db = getDatabase(app); 
+        window.auth = auth;
+        
+        // Determine the current user and make UID globally available for the quiz script
+        onAuthStateChanged(auth, (user) => {
+            window.currentUserId = user ? user.uid : null;
+            if (!user) {
+                console.warn("User not authenticated. Quiz results will not be saved.");
+                // Optional: Redirect to login or show an alert.
+            }
+        });
+    </script>
+    
+  <script src="js/quizzes.js" type="module"></script>
+
 
 </body>
 

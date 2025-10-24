@@ -92,8 +92,30 @@
     </footer>
   </div>
 
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+    import { getAuth } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
+    import { getDatabase } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js"; // <-- NEW IMPORT
 
-<script src="./js/video.js"></script>
+    const firebaseConfig = {
+        apiKey: "AIzaSyCnCovkec0YaXmgpcnNLx1qiCpGG7-iipU",
+        authDomain: "educational-site-f1fac.firebaseapp.com",
+        projectId: "educational-site-f1fac",
+        storageBucket: "educational-site-f1fac.firebasestorage.app",
+        messagingSenderId: "868437050505",
+        appId: "1:868437050505:web:8ca5d61feee67a67647258"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    
+    // Initialize the Realtime Database
+    window.db = getDatabase(app); // Making it global for video.js to access
+    window.auth = auth; // Making auth global too, for consistency
+</script>
+
+<script src="./js/video.js" type="module"></script>
+
 </body>
 
 </html>
