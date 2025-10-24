@@ -10,23 +10,90 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; }
-        .admin-container { max-width: 1200px; margin: 0 auto; padding: 2rem 1rem; }
-        .card { transition: transform 0.2s; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05); }
-        .card:hover { transform: translateY(-3px); box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1); }
-        .stats-table th, .stats-table td { padding: 1rem; text-align: left; border-bottom: 1px solid #e5e7eb; }
-        .stats-table th { background-color: #f9fafb; font-weight: 600; text-transform: uppercase; font-size: 0.8rem; color: #4b5563; }
-        .stats-table tbody tr:hover { background-color: #f3f4f6; }
-        .student-name { font-weight: 500; color: #1f2937; }
-        .progress-bar { height: 8px; background-color: #e5e7eb; border-radius: 4px; overflow: hidden; }
-        .progress-fill { height: 100%; background-color: #3b82f6; transition: width 0.5s ease-in-out; }
-        .score-cell { font-weight: 600; }
-        .score-high { color: #10b981; }
-        .score-medium { color: #f59e0b; }
-        .score-low { color: #ef4444; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+        }
+
+        .admin-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+        }
+
+        .card {
+            transition: transform 0.2s;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        .card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .stats-table th,
+        .stats-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .stats-table th {
+            background-color: #f9fafb;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            color: #4b5563;
+        }
+
+        .stats-table tbody tr:hover {
+            background-color: #f3f4f6;
+        }
+
+        .student-name {
+            font-weight: 500;
+            color: #1f2937;
+        }
+
+        .progress-bar {
+            height: 8px;
+            background-color: #e5e7eb;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background-color: #3b82f6;
+            transition: width 0.5s ease-in-out;
+        }
+
+        .score-cell {
+            font-weight: 600;
+        }
+
+        .score-high {
+            color: #10b981;
+        }
+
+        .score-medium {
+            color: #f59e0b;
+        }
+
+        .score-low {
+            color: #ef4444;
+        }
+
         @media (max-width: 768px) {
-            .summary-cards { grid-template-columns: 1fr; }
-            .stats-table { display: block; overflow-x: auto; white-space: nowrap; }
+            .summary-cards {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-table {
+                display: block;
+                overflow-x: auto;
+                white-space: nowrap;
+            }
         }
     </style>
 </head>
@@ -110,13 +177,13 @@
         // Function to fetch and process data
         async function fetchData() {
             try {
-                document.getElementById('stats-table-body').innerHTML = 
+                document.getElementById('stats-table-body').innerHTML =
                     '<tr><td colspan="7" class="text-center py-4 text-gray-500">Fetching data from Firebase...</td></tr>';
 
                 // Get users data
                 const usersSnapshot = await database.ref('users').once('value');
                 const users = usersSnapshot.val();
-                
+
                 if (!users) {
                     throw new Error('No users data found');
                 }
@@ -124,14 +191,14 @@
                 // Get tracking data
                 const trackingSnapshot = await database.ref('tracking').once('value');
                 const tracking = trackingSnapshot.val();
-                
+
                 // Process data for display
                 processData(users, tracking);
             } catch (error) {
                 console.error("Error fetching data:", error);
-                document.getElementById('stats-table-body').innerHTML = 
+                document.getElementById('stats-table-body').innerHTML =
                     '<tr><td colspan="7" class="text-center py-4 text-red-500">Error loading data: ' + error.message + '</td></tr>';
-                
+
                 // Set default values on error
                 document.getElementById('total-students').textContent = 'Error';
                 document.getElementById('avg-completion').textContent = 'Error';
@@ -140,84 +207,94 @@
         }
 
         // Process the data for display
+        // Process the data for display
         function processData(users, tracking) {
             // Calculate summary statistics
-            const totalStudents = Object.keys(users).length;
+            let totalStudents = 0; // <-- FIX 1: Initialize to 0
             let totalVideoProgress = 0;
             let totalAudioProgress = 0;
             let totalQuizScore = 0;
             let quizCount = 0;
             let usersWithVideoData = 0;
-            
+
             let usersListenAudioData = 0;
-            
+
             // Prepare table data
             const tableRows = [];
-            
+
             // Process each user
             for (const userId in users) {
+                // --- FIX 2: SKIP THE ADMIN ACCOUNT ---
+                if (userId === "01000000000") {
+                    continue; // Skip this user and go to the next one
+                }
+                // --- END FIX ---
+
+                totalStudents++; // Now we only count non-admin users
+
                 const user = users[userId];
                 const userTracking = tracking && tracking[userId] ? tracking[userId] : {};
-                
+
                 // Get video tracking data
                 const videoTracking = userTracking.video_tracking || {};
                 const audioTracking = userTracking.audio_tracking || {};
                 const videosWatched = Object.keys(videoTracking).length;
-                const audiosListened= Object.keys(audioTracking).length;
-                
+                const audiosListened = Object.keys(audioTracking).length;
+
                 // Calculate video progress percentage
                 let videoProgress = 0;
                 if (videosWatched > 0) {
                     let totalWatchedTime = 0;
                     let totalDuration = 0;
-                    
+
                     for (const videoId in videoTracking) {
                         const video = videoTracking[videoId];
                         totalWatchedTime += video.last_watched_time || 0;
                         totalDuration += video.total_duration || 1; // Avoid division by zero
                     }
-                    
+
                     videoProgress = Math.round((totalWatchedTime / totalDuration) * 100);
                     totalVideoProgress += videoProgress;
                     usersWithVideoData++;
                 }
                 // Calculate audio progress percentage
+                // Calculate audio progress percentage
                 let audioProgress = 0;
-                if (audioProgress > 0) {
+                if (audiosListened > 0) { // <--- FIX 1: Check audiosListened
                     let totallistenedTime = 0;
                     let totalDuration = 0;
-                    
+
                     for (const AudioId in audioTracking) {
                         const audio = audioTracking[AudioId];
-                        totallistenedTime += audio.last_watched_time || 0;
+                        totallistenedTime += audio.last_listened_time || 0; // <--- FIX 2: Use last_listened_time
                         totalDuration += audio.total_duration || 1; // Avoid division by zero
                     }
-                    
-                    audioProgress = Math.round((totalWatchedTime / totalDuration) * 100);
+
+                    audioProgress = Math.round((totallistenedTime / totalDuration) * 100);
                     totalAudioProgress += audioProgress;
                     usersListenAudioData++;
                 }
-                
+
                 // Get quiz data
                 const quizzes = userTracking.quizzes || {};
                 const quizScores = {};
-                
+
                 // Process each quiz
                 for (const quizId in quizzes) {
                     const quiz = quizzes[quizId];
                     const score = quiz.score || 0;
                     const totalQuestions = quiz.total_questions || 1;
                     const percentage = Math.round((score / totalQuestions) * 100);
-                    
+
                     // Store quiz score by quiz number
                     const quizNumber = quizId.split('-')[1] || '1';
                     quizScores[`quiz${quizNumber}`] = `${score}%`;
-                    
+
                     // Add to overall quiz statistics
                     totalQuizScore += score;
                     quizCount++;
                 }
-                
+
                 // Create table row for this user
                 tableRows.push(`
                     <tr>
@@ -247,14 +324,26 @@
                     </tr>
                 `);
             }
-            
+
             // Update summary cards
             document.getElementById('total-students').textContent = totalStudents;
-            document.getElementById('avg-completion').textContent = 
-                usersWithVideoData > 0 ? Math.round(totalVideoProgress / usersWithVideoData) + '%' : '0%';
-            document.getElementById('avg-quiz-score').textContent = 
+            // Calculate average completion (video and audio)
+            const avgVideo = usersWithVideoData > 0 ? (totalVideoProgress / usersWithVideoData) : 0;
+            const avgAudio = usersListenAudioData > 0 ? (totalAudioProgress / usersListenAudioData) : 0;
+            let avgCompletion = 0;
+
+            if (usersWithVideoData > 0 && usersListenAudioData > 0) {
+                avgCompletion = Math.round((avgVideo + avgAudio) / 2); // Average of both
+            } else if (usersWithVideoData > 0) {
+                avgCompletion = Math.round(avgVideo); // Only video data exists
+            } else if (usersListenAudioData > 0) {
+                avgCompletion = Math.round(avgAudio); // Only audio data exists
+            }
+
+            document.getElementById('avg-completion').textContent = `${avgCompletion}%`;
+            document.getElementById('avg-quiz-score').textContent =
                 quizCount > 0 ? Math.round(totalQuizScore / quizCount) + '%' : '0%';
-            
+
             // Update table
             const tableBody = document.getElementById('stats-table-body');
             if (tableRows.length > 0) {
@@ -273,9 +362,9 @@
         }
 
         // Initialize the dashboard when the page loads
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             fetchData();
-            
+
             // Optional: Set up real-time updates
             // database.ref('users').on('value', (snapshot) => {
             //     const users = snapshot.val();
