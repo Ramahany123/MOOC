@@ -153,7 +153,42 @@ async function handleLogin(e, errorEl, loginBtn) {
             email: email,
             uid: uid 
         };
-        
+        // Add this function to your existing <script>
+function handleAdminLogin() {
+    const phone = "01000000000"; // Ideally retrieved from a form field
+    const password = "admin123"; // Ideally retrieved from a form field
+    const adminEmail = phone + "@fakeadmin.com"; // Firebase Auth requires email format
+
+    // 1. Sign in the user
+    firebase.auth().signInWithEmailAndPassword(adminEmail, password)
+        .then((userCredential) => {
+            // Check if the user has the 'admin' role (must be stored in the database)
+            const userId = userCredential.user.uid;
+            
+            // 2. Check Role (Assuming you store roles under a 'roles' node)
+            return database.ref('roles/' + userId).once('value');
+        })
+        .then((roleSnapshot) => {
+            if (roleSnapshot.val() === 'admin') {
+                // 3. Success! Route to the dashboard
+                // Since this dashboard is the current page, you just reveal the content
+                document.getElementById('login-screen').style.display = 'none';
+                document.getElementById('admin-dashboard-container').style.display = 'block';
+                
+                // Then call the data fetch
+                fetchData();
+            } else {
+                // Not an admin, sign out for security
+                firebase.auth().signOut();
+                alert('Access Denied. Not an admin.');
+            }
+        })
+        .catch((error) => {
+            // Handle Errors
+            alert("Login Failed: " + error.message);
+            console.error(error);
+        });
+}
         localStorage.setItem('loggedUser', JSON.stringify(loggedUser));
         // Store phone separately for easy access by tracking scripts
         localStorage.setItem('userPhone', uid); 
