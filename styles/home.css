@@ -24,12 +24,25 @@ body {
   background-color: var(--background-color);
   color: var(--text-color);
   display: flex;
+  flex-direction: column;
+  /* MODIFIED: To stack title and card */
   justify-content: center;
   align-items: center;
   min-height: 100vh;
   margin: 0;
   padding: 20px;
   /* Ensures container never touches screen edge */
+}
+
+/* --- NEW: Big Site Title --- */
+.site-title {
+  font-family: 'Poppins', sans-serif;
+  /* MODIFIED: Added new font */
+  font-size: 3.5rem;
+  font-weight: 700;
+  color: var(--primary-color);
+  margin-bottom: 20px;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
 /* ------------------- */
@@ -123,6 +136,13 @@ body {
 
 /* --- Responsive Design for smaller screens --- */
 @media (max-width: 480px) {
+
+  /* --- NEW: Responsive Title --- */
+  .site-title {
+    font-size: 2.5rem;
+    margin-bottom: 15px;
+  }
+
   .main-menu {
     grid-template-columns: 1fr;
     /* Single column on mobile */
