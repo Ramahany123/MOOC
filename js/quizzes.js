@@ -1,16 +1,11 @@
-import { ref, update } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
+import { ref, update, get, child, set } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
 
 document.addEventListener("DOMContentLoaded", () => {
-    // Ensure Firebase DB is initialized globally (as done in quizzes.html script block)
-    if (!window.db) {
-        console.error("Firebase Database not initialized. Check quizzes.html script.");
-        // Stop execution if DB is not ready
-        return; 
-    }
+    // ... (Existing QUIZ DATA, STATE VARIABLES, and DOM ELEMENTS remain the same) ...
 
     // --- QUIZ DATA ---
-    // Note: The quiz IDs ('quiz-1', 'quiz-2', etc.) must match the keys used in tracking/UID/quizzes/ in the DB
     const quizData = {
+        // ... (existing quiz data) ...
         "quiz-1": {
             title: "Découvrir ma famille",
             questions: [
@@ -98,8 +93,10 @@ document.addEventListener("DOMContentLoaded", () => {
     const restartQuizBtn = document.getElementById("restart-quiz-btn");
     const backToMenuBtn = document.getElementById("back-to-menu-btn");
 
-    // --- FUNCTIONS ---
-
+    // ... (Existing init, showQuizSelection, startQuiz, shuffleArray, normalize, showQuestion, 
+    //      renderMcqQuestion, renderMatchQuestion, renderWrittenQuestion, 
+    //      checkMcqAnswer, checkMatchAnswer, checkWrittenAnswer, handleActionClick, showNextQuestion) ...
+    
     function init() {
         showQuizSelection();
         quizActionBtn.addEventListener("click", handleActionClick);
@@ -365,12 +362,12 @@ document.addEventListener("DOMContentLoaded", () => {
         const percentage = Math.round((score / questions.length) * 100);
         scoreTextEl.textContent = `You scored ${score} out of ${questions.length} (${percentage}%)!`;
         
-        // ⭐ CRITICAL: Save the quiz result to Firebase
+        // ⭐ CRITICAL: Save the quiz result to Firebase with attempt limit
         saveQuizResult(currentQuizId, percentage, score, questions.length);
     }
 
     // ------------------------------------------------------------------
-    // ⭐ CORE FIX: FIREBASE QUIZ SAVING FUNCTION (USES PHONE NUMBER)
+    // ⭐ MODIFIED CORE: FIREBASE QUIZ SAVING FUNCTION WITH ATTEMPT LIMIT
     // ------------------------------------------------------------------
 
     /**
@@ -388,56 +385,73 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         return null;
     }
-
+    
     /**
-     * Saves the student's quiz score to Firebase Realtime Database.
+     * Saves the student's quiz score to Firebase Realtime Database, 
+     * limiting the number of attempts to 3 and storing each score.
      */
-    function saveQuizResult(quizId, scorePercentage, correctCount, totalCount) {
+    async function saveQuizResult(quizId, scorePercentage, correctCount, totalCount) {
         const userPhone = getCurrentUserPhone();
+        const ATTEMPT_LIMIT = 3;
         
-        if (!userPhone) {
-            console.error("Cannot save quiz: User phone number is missing. Please log in.");
-            return;
-        }
-
-        if (!window.db) {
-            console.error("Cannot save quiz: Firebase database is not initialized.");
-            return;
-        }
-
-        // Path: tracking/PHONE_NUMBER/quizzes/QUIZ_ID
-        const quizRef = ref(window.db, `tracking/${userPhone}/quizzes/${quizId}`);
-
-        const quizDataEntry = {
-            score: parseFloat(scorePercentage.toFixed(2)),
-            quiz_title: quizData[quizId].title,
-            attempt_date: new Date().toISOString(),
-            correct_answers: correctCount,
-            total_questions: totalCount
+        // Helper to display messages
+        const displayMessage = (text, isError = false) => {
+            const existingMsg = resultsContainerDiv.querySelector('.result-message');
+            if (existingMsg) existingMsg.remove();
+            
+            const msg = document.createElement('div');
+            msg.className = `result-message px-4 py-3 rounded mt-4 ${isError ? 'bg-red-100 border border-red-400 text-red-700' : 'bg-green-100 border border-green-400 text-green-700'}`;
+            msg.textContent = text;
+            resultsContainerDiv.appendChild(msg);
+            
+            setTimeout(() => { msg.remove(); }, 5000);
         };
 
-        update(quizRef, quizDataEntry)
-        .then(() => {
-            console.log(`Quiz ${quizId} result saved for user ${userPhone}! Score: ${scorePercentage}%`);
-            
-            // Show success message to user
-            const successMsg = document.createElement('div');
-            successMsg.className = 'bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mt-4';
-            successMsg.textContent = 'Quiz results saved successfully!';
-            resultsContainerDiv.appendChild(successMsg);
-            
-            setTimeout(() => {
-                successMsg.remove();
-            }, 3000);
-        })
-        .catch(error => {
+        if (!userPhone || !window.db) {
+            displayMessage("Cannot save quiz: User phone is missing or database is not initialized.", true);
+            return;
+        }
+
+        const quizAttemptsRef = ref(window.db, `tracking/${userPhone}/quizzes/${quizId}/attempts`);
+
+        try {
+            const snapshot = await get(quizAttemptsRef);
+            const attemptsData = snapshot.val() || {};
+            const currentAttempts = Object.keys(attemptsData).length;
+
+            if (currentAttempts >= ATTEMPT_LIMIT) {
+                displayMessage(`Quiz attempts limit reached (${ATTEMPT_LIMIT}). Score not saved.`, true);
+                return;
+            }
+
+            // Determine the next attempt key (e.g., attempt_1, attempt_2, attempt_3)
+            const nextAttemptKey = `attempt_${currentAttempts + 1}`;
+
+            const quizDataEntry = {
+                score: parseFloat(scorePercentage.toFixed(2)),
+                attempt_date: new Date().toISOString(),
+                correct_answers: correctCount,
+                total_questions: totalCount
+            };
+
+            // Path: tracking/PHONE_NUMBER/quizzes/QUIZ_ID/attempts/attempt_N
+            const newAttemptRef = ref(window.db, `tracking/${userPhone}/quizzes/${quizId}/attempts/${nextAttemptKey}`);
+
+            await set(newAttemptRef, quizDataEntry);
+
+            // Also update a summary for quick view, if needed (e.g., last score, highest score)
+            const summaryRef = ref(window.db, `tracking/${userPhone}/quizzes/${quizId}`);
+            await update(summaryRef, {
+                last_score: scorePercentage,
+                last_attempt_date: new Date().toISOString(),
+                total_attempts: currentAttempts + 1,
+            });
+
+            displayMessage(`Quiz result saved successfully as ${nextAttemptKey}! Score: ${scorePercentage}%`);
+        } catch (error) {
             console.error("Error saving quiz result: ", error);
-            
-            const errorMsg = document.createElement('div');
-            errorMsg.className = 'bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mt-4';
-            errorMsg.textContent = 'Error saving quiz results. Check console for details.';
-            resultsContainerDiv.appendChild(errorMsg);
-        });
+            displayMessage('Error saving quiz results. Check console for details.', true);
+        }
     }
 
     // --- START THE APP ---

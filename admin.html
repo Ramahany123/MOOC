@@ -36,6 +36,7 @@
             padding: 1rem;
             text-align: left;
             border-bottom: 1px solid #e5e7eb;
+            vertical-align: top; 
         }
 
         .stats-table th {
@@ -69,19 +70,23 @@
         }
 
         .score-cell {
-            font-weight: 600;
+            font-weight: 500; 
+            white-space: normal; 
         }
 
         .score-high {
-            color: #10b981;
+            color: #10b981; /* Green */
+            font-weight: 700;
         }
 
         .score-medium {
-            color: #f59e0b;
+            color: #f59e0b; /* Yellow/Orange */
+            font-weight: 700;
         }
 
         .score-low {
-            color: #ef4444;
+            color: #ef4444; /* Red */
+            font-weight: 700;
         }
 
         @media (max-width: 768px) {
@@ -141,15 +146,15 @@
                             <th>Video Progress</th>
                             <th>Audio Listened</th>
                             <th>Audio Progress</th>
-                            <th>Quiz 1</th>
-                            <th>Quiz 2</th>
-                            <th>Quiz 3</th>
-                            <th>Quiz 4</th>
+                            <th>Quiz 1 Scores</th>
+                            <th>Quiz 2 Scores</th>
+                            <th>Quiz 3 Scores</th>
+                            <th>Quiz 4 Scores</th>
                         </tr>
                     </thead>
                     <tbody id="stats-table-body" class="divide-y divide-gray-200">
                         <tr>
-                            <td colspan="7" class="text-center py-4 text-gray-500">Connecting to Firebase...</td>
+                            <td colspan="10" class="text-center py-4 text-gray-500">Connecting to Firebase...</td>
                         </tr>
                     </tbody>
                 </table>
@@ -174,49 +179,35 @@
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
 
-        // Function to fetch and process data
-        async function fetchData() {
-            try {
-                document.getElementById('stats-table-body').innerHTML =
-                    '<tr><td colspan="7" class="text-center py-4 text-gray-500">Fetching data from Firebase...</td></tr>';
+        // --- CONSTANTS ---
+        const TOTAL_VIDEOS = 4;
+        const TOTAL_AUDIOS = 3;
+        const QUIZ_IDS = ['quiz-1', 'quiz-2', 'quiz-3', 'quiz-4'];
 
-                // Get users data
-                const usersSnapshot = await database.ref('users').once('value');
-                const users = usersSnapshot.val();
 
-                if (!users) {
-                    throw new Error('No users data found');
-                }
-
-                // Get tracking data
-                const trackingSnapshot = await database.ref('tracking').once('value');
-                const tracking = trackingSnapshot.val();
-
-                // Process data for display
-                processData(users, tracking);
-            } catch (error) {
-                console.error("Error fetching data:", error);
-                document.getElementById('stats-table-body').innerHTML =
-                    '<tr><td colspan="7" class="text-center py-4 text-red-500">Error loading data: ' + error.message + '</td></tr>';
-
-                // Set default values on error
-                document.getElementById('total-students').textContent = 'Error';
-                document.getElementById('avg-completion').textContent = 'Error';
-                document.getElementById('avg-quiz-score').textContent = 'Error';
+        // Helper function to determine score class for styling based on the best score
+        function getScoreClass(score) {
+            // The score input might be a string like '90%, 80%' or a number
+            if (typeof score === 'string') {
+                const match = score.match(/^(\d+)%/);
+                score = match ? parseInt(match[1]) : NaN;
             }
+            const numericScore = parseInt(score);
+            if (isNaN(numericScore)) return '';
+            if (numericScore >= 80) return 'score-high';
+            if (numericScore >= 60) return 'score-medium';
+            return 'score-low';
         }
 
         // Process the data for display
-        // Process the data for display
         function processData(users, tracking) {
             // Calculate summary statistics
-            let totalStudents = 0; // <-- FIX 1: Initialize to 0
+            let totalStudents = 0;
             let totalVideoProgress = 0;
             let totalAudioProgress = 0;
-            let totalQuizScore = 0;
-            let quizCount = 0;
+            let totalQuizScoreSum = 0; // Sum of ALL attempt scores for average
+            let quizAttemptsCounted = 0; // Count of ALL attempts for average
             let usersWithVideoData = 0;
-
             let usersListenAudioData = 0;
 
             // Prepare table data
@@ -224,76 +215,87 @@
 
             // Process each user
             for (const userId in users) {
-                // --- FIX 2: SKIP THE ADMIN ACCOUNT ---
+                // Skip the admin account
                 if (userId === "01000000000") {
-                    continue; // Skip this user and go to the next one
+                    continue;
                 }
-                // --- END FIX ---
 
-                totalStudents++; // Now we only count non-admin users
+                totalStudents++;
 
                 const user = users[userId];
                 const userTracking = tracking && tracking[userId] ? tracking[userId] : {};
 
-                // Get video tracking data
+                // --- Video and Audio Tracking ---
                 const videoTracking = userTracking.video_tracking || {};
                 const audioTracking = userTracking.audio_tracking || {};
                 const videosWatched = Object.keys(videoTracking).length;
                 const audiosListened = Object.keys(audioTracking).length;
 
-                // Calculate video progress percentage
                 let videoProgress = 0;
                 if (videosWatched > 0) {
                     let totalWatchedTime = 0;
                     let totalDuration = 0;
-
                     for (const videoId in videoTracking) {
                         const video = videoTracking[videoId];
                         totalWatchedTime += video.last_watched_time || 0;
-                        totalDuration += video.total_duration || 1; // Avoid division by zero
+                        totalDuration += video.total_duration || 1;
                     }
-
                     videoProgress = Math.round((totalWatchedTime / totalDuration) * 100);
                     totalVideoProgress += videoProgress;
                     usersWithVideoData++;
                 }
-                // Calculate audio progress percentage
-                // Calculate audio progress percentage
-                let audioProgress = 0;
-                if (audiosListened > 0) { // <--- FIX 1: Check audiosListened
-                    let totallistenedTime = 0;
-                    let totalDuration = 0;
 
+                let audioProgress = 0;
+                if (audiosListened > 0) {
+                    let totalListenedTime = 0;
+                    let totalDuration = 0;
                     for (const AudioId in audioTracking) {
                         const audio = audioTracking[AudioId];
-                        totallistenedTime += audio.last_listened_time || 0; // <--- FIX 2: Use last_listened_time
-                        totalDuration += audio.total_duration || 1; // Avoid division by zero
+                        totalListenedTime += audio.last_listened_time || 0;
+                        totalDuration += audio.total_duration || 1;
                     }
-
-                    audioProgress = Math.round((totallistenedTime / totalDuration) * 100);
+                    audioProgress = Math.round((totalListenedTime / totalDuration) * 100);
                     totalAudioProgress += audioProgress;
                     usersListenAudioData++;
                 }
+                // --- End Video/Audio Logic ---
 
-                // Get quiz data
+                // --- QUIZ SCORING LOGIC: Show ALL Scores as List (Sorted) ---
                 const quizzes = userTracking.quizzes || {};
-                const quizScores = {};
+                const quizScoresDisplay = {};
 
-                // Process each quiz
-                for (const quizId in quizzes) {
-                    const quiz = quizzes[quizId];
-                    const score = quiz.score || 0;
-                    const totalQuestions = quiz.total_questions || 1;
-                    const percentage = Math.round((score / totalQuestions) * 100);
+                for (const quizId of QUIZ_IDS) {
+                    const attempts = (quizzes[quizId] && quizzes[quizId].attempts) || {};
+                    let allScores = [];
 
-                    // Store quiz score by quiz number
-                    const quizNumber = quizId.split('-')[1] || '1';
-                    quizScores[`quiz${quizNumber}`] = `${score}%`;
+                    // 1. Collect all scores and update global average counts
+                    for (const attemptId in attempts) {
+                        const score = attempts[attemptId].score || 0;
+                        allScores.push(score);
 
-                    // Add to overall quiz statistics
-                    totalQuizScore += score;
-                    quizCount++;
+                        // Update global average statistics
+                        totalQuizScoreSum += score;
+                        quizAttemptsCounted++;
+                    }
+
+                    // 2. Sort scores from best to worst
+                    const sortedScores = allScores.sort((a, b) => b - a);
+
+                    // 3. Format scores into the requested comma-separated list
+                    const formattedScores = sortedScores
+                        .map(s => `${s}%`)
+                        .join(', ');
+
+                    const quizNumber = quizId.split('-')[1];
+
+                    // 4. Display all scores, using the best score for the color class
+                    // Pass the whole formattedScores string to getScoreClass for color coding
+                    quizScoresDisplay[`quiz${quizNumber}`] = allScores.length > 0 ?
+                        `<span class="${getScoreClass(formattedScores)}">${formattedScores}</span>` :
+                        '-';
                 }
+                // --- END QUIZ SCORING LOGIC ---
+
 
                 // Create table row for this user
                 tableRows.push(`
@@ -317,62 +319,75 @@
                                 <span class="text-sm">${audioProgress}%</span>
                             </div>
                         </td>
-                        <td class="score-cell ${getScoreClass(quizScores.quiz1)} text-center">${quizScores.quiz1 || '-'}</td>
-                        <td class="score-cell ${getScoreClass(quizScores.quiz2)} text-center">${quizScores.quiz2 || '-'}</td>
-                        <td class="score-cell ${getScoreClass(quizScores.quiz3)} text-center">${quizScores.quiz3 || '-'}</td>
-                        <td class="score-cell ${getScoreClass(quizScores.quiz4)} text-center">${quizScores.quiz4 || '-'}</td>
+                        <td class="score-cell text-center">${quizScoresDisplay.quiz1 || '-'}</td>
+                        <td class="score-cell text-center">${quizScoresDisplay.quiz2 || '-'}</td>
+                        <td class="score-cell text-center">${quizScoresDisplay.quiz3 || '-'}</td>
+                        <td class="score-cell text-center">${quizScoresDisplay.quiz4 || '-'}</td>
                     </tr>
                 `);
             }
 
             // Update summary cards
             document.getElementById('total-students').textContent = totalStudents;
-            // Calculate average completion (video and audio)
+
+            // FIX: Correctly calculate average completion by averaging only existing data sources
             const avgVideo = usersWithVideoData > 0 ? (totalVideoProgress / usersWithVideoData) : 0;
             const avgAudio = usersListenAudioData > 0 ? (totalAudioProgress / usersListenAudioData) : 0;
             let avgCompletion = 0;
 
-            if (usersWithVideoData > 0 && usersListenAudioData > 0) {
-                avgCompletion = Math.round((avgVideo + avgAudio) / 2); // Average of both
-            } else if (usersWithVideoData > 0) {
-                avgCompletion = Math.round(avgVideo); // Only video data exists
-            } else if (usersListenAudioData > 0) {
-                avgCompletion = Math.round(avgAudio); // Only audio data exists
+            if (usersWithVideoData > 0 || usersListenAudioData > 0) {
+                // Determine how many progress sources to divide by (1 or 2)
+                const validSources = (usersWithVideoData > 0) + (usersListenAudioData > 0); 
+                avgCompletion = Math.round((avgVideo + avgAudio) / validSources);
             }
 
             document.getElementById('avg-completion').textContent = `${avgCompletion}%`;
+
+            // Calculate average quiz score based on ALL attempt scores
             document.getElementById('avg-quiz-score').textContent =
-                quizCount > 0 ? Math.round(totalQuizScore / quizCount) + '%' : '0%';
+                quizAttemptsCounted > 0 ? Math.round(totalQuizScoreSum / quizAttemptsCounted) + '%' : '0%';
 
             // Update table
             const tableBody = document.getElementById('stats-table-body');
             if (tableRows.length > 0) {
                 tableBody.innerHTML = tableRows.join('');
             } else {
-                tableBody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-gray-500">No student data found.</td></tr>';
+                // FIX: colspan must be 10
+                tableBody.innerHTML = '<tr><td colspan="10" class="text-center py-4 text-gray-500">No student data found.</td></tr>';
             }
         }
 
-        // Helper function to determine score class for styling
-        function getScoreClass(score) {
-            if (!score) return '';
-            if (score >= 80) return 'score-high';
-            if (score >= 60) return 'score-medium';
-            return 'score-low';
+        // Function to fetch and process data
+        async function fetchData() {
+            try {
+                document.getElementById('stats-table-body').innerHTML =
+                    '<tr><td colspan="10" class="text-center py-4 text-gray-500">Fetching data from Firebase...</td></tr>';
+
+                const usersSnapshot = await database.ref('users').once('value');
+                const trackingSnapshot = await database.ref('tracking').once('value');
+
+                const users = usersSnapshot.val() || {};
+                const tracking = trackingSnapshot.val() || {};
+
+                if (Object.keys(users).length === 0) {
+                    throw new Error('No users data found');
+                }
+
+                processData(users, tracking);
+            } catch (error) {
+                console.error("Error fetching data:", error);
+                document.getElementById('stats-table-body').innerHTML =
+                    '<tr><td colspan="10" class="text-center py-4 text-red-500">Error loading data: ' + error.message + '</td></tr>';
+
+                // Set default values on error
+                document.getElementById('total-students').textContent = 'Error';
+                document.getElementById('avg-completion').textContent = 'Error';
+                document.getElementById('avg-quiz-score').textContent = 'Error';
+            }
         }
 
         // Initialize the dashboard when the page loads
-        document.addEventListener('DOMContentLoaded', function () {
-            fetchData();
-
-            // Optional: Set up real-time updates
-            // database.ref('users').on('value', (snapshot) => {
-            //     const users = snapshot.val();
-            //     database.ref('tracking').once('value').then((trackingSnapshot) => {
-            //         processData(users, trackingSnapshot.val());
-            //     });
-            // });
-        });
+        document.addEventListener('DOMContentLoaded', fetchData);
     </script>
 
 </body>
